@@ -1,0 +1,623 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local CoreGui = game:GetService("CoreGui")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+
+local success, container = pcall(function() return gethui() or CoreGui end)
+if not success or not container then container = LocalPlayer:WaitForChild("PlayerGui") end
+if container:FindFirstChild("ProHackHubGui") then container.ProHackHubGui:Destroy() end
+
+local ScreenGui = Instance.new("ScreenGui", container)
+ScreenGui.Name = "ProHackHubGui"
+ScreenGui.ResetOnSpawn = false
+
+-- 1. หน้าต่างข้อตกลง
+local TermsFrame = Instance.new("Frame", ScreenGui)
+TermsFrame.Size = UDim2.new(0, 420, 0, 260)
+TermsFrame.Position = UDim2.new(0.5, -210, 0.5, -130)
+TermsFrame.BackgroundColor3 = Color3.fromRGB(18, 14, 28)
+Instance.new("UICorner", TermsFrame).CornerRadius = UDim.new(0, 12)
+local tStroke = Instance.new("UIStroke", TermsFrame)
+tStroke.Color = Color3.fromRGB(110, 40, 180)
+tStroke.Thickness = 1.5
+
+local TermsTitle = Instance.new("TextLabel", TermsFrame)
+TermsTitle.Size = UDim2.new(1, 0, 0, 40)
+TermsTitle.BackgroundColor3 = Color3.fromRGB(26, 20, 40)
+TermsTitle.TextColor3 = Color3.fromRGB(255, 200, 50)
+TermsTitle.Text = "⚡ ข้อตกลงในการใช้งาน PROHACK ⚡"
+TermsTitle.TextSize = 14
+TermsTitle.Font = Enum.Font.GothamBold
+Instance.new("UICorner", TermsTitle).CornerRadius = UDim.new(0, 12)
+
+local TermsDesc = Instance.new("TextLabel", TermsFrame)
+TermsDesc.Size = UDim2.new(1, -30, 0, 130)
+TermsDesc.Position = UDim2.new(0, 15, 0, 50)
+TermsDesc.BackgroundTransparency = 1
+TermsDesc.TextColor3 = Color3.fromRGB(220, 220, 220)
+TermsDesc.Text = "เนื่องจากสคริปต์ยังอยู่ในช่วงทดลอง:\n\n1. Aimbot (ล็อคเป้าหมายอัตโนมัติ - ตรงกลางจอ)\n2. ตัวช่วยเล่น (ปรับความเร็ว/กระโดด/Hitbox ได้)\n3. ESP ผู้เล่น (เขียว = ทีมเดียวกัน / แดง = ศัตรู)"
+TermsDesc.TextSize = 12
+TermsDesc.Font = Enum.Font.Gotham
+TermsDesc.TextXAlignment = Enum.TextXAlignment.Left
+TermsDesc.TextYAlignment = Enum.TextYAlignment.Top
+
+local AgreeBtn = Instance.new("TextButton", TermsFrame)
+AgreeBtn.Size = UDim2.new(0, 180, 0, 36)
+AgreeBtn.Position = UDim2.new(0, 15, 1, -48)
+AgreeBtn.BackgroundColor3 = Color3.fromRGB(40, 180, 80)
+AgreeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+AgreeBtn.Text = "ตกลง"
+AgreeBtn.TextSize = 13
+AgreeBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", AgreeBtn).CornerRadius = UDim.new(0, 8)
+
+local ExitBtn = Instance.new("TextButton", TermsFrame)
+ExitBtn.Size = UDim2.new(0, 180, 0, 36)
+ExitBtn.Position = UDim2.new(1, -195, 1, -48)
+ExitBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+ExitBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ExitBtn.Text = "ออก"
+ExitBtn.TextSize = 13
+ExitBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", ExitBtn).CornerRadius = UDim.new(0, 8)
+
+ExitBtn.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+end)
+
+-- 2. หน้าต่างดาวน์โหลด
+local LoadFrame = Instance.new("Frame", ScreenGui)
+LoadFrame.Size = UDim2.new(0, 380, 0, 160)
+LoadFrame.Position = UDim2.new(0.5, -190, 0.5, -80)
+LoadFrame.BackgroundColor3 = Color3.fromRGB(18, 14, 28)
+LoadFrame.Visible = false
+Instance.new("UICorner", LoadFrame).CornerRadius = UDim.new(0, 12)
+local lStroke = Instance.new("UIStroke", LoadFrame)
+lStroke.Color = Color3.fromRGB(110, 40, 180)
+lStroke.Thickness = 1.5
+
+local LoadTitle = Instance.new("TextLabel", LoadFrame)
+LoadTitle.Size = UDim2.new(1, 0, 0, 35)
+LoadTitle.BackgroundTransparency = 1
+LoadTitle.TextColor3 = Color3.fromRGB(220, 140, 255)
+LoadTitle.Text = "PROHACK HUB LOADING"
+LoadTitle.TextSize = 14
+LoadTitle.Font = Enum.Font.GothamBold
+
+local LoadText = Instance.new("TextLabel", LoadFrame)
+LoadText.Size = UDim2.new(1, 0, 0, 30)
+LoadText.Position = UDim2.new(0, 0, 0, 40)
+LoadText.BackgroundTransparency = 1
+LoadText.TextColor3 = Color3.fromRGB(255, 255, 255)
+LoadText.Text = "กำลังเตรียมข้อมูล... 1%"
+LoadText.TextSize = 14
+LoadText.Font = Enum.Font.GothamMedium
+
+local BarBg = Instance.new("Frame", LoadFrame)
+BarBg.Size = UDim2.new(1, -40, 0, 16)
+BarBg.Position = UDim2.new(0, 20, 0, 85)
+BarBg.BackgroundColor3 = Color3.fromRGB(35, 25, 55)
+Instance.new("UICorner", BarBg).CornerRadius = UDim.new(0, 8)
+
+local BarFill = Instance.new("Frame", BarBg)
+BarFill.Size = UDim2.new(0, 0, 1, 0)
+BarFill.BackgroundColor3 = Color3.fromRGB(160, 60, 255)
+Instance.new("UICorner", BarFill).CornerRadius = UDim.new(0, 8)
+
+-- 3. หน้าต่างหลัก
+local MainFrame = Instance.new("Frame", ScreenGui)
+MainFrame.Size = UDim2.new(0, 480, 0, 380)
+MainFrame.Position = UDim2.new(0.5, -240, 0.5, -190)
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 12, 22)
+MainFrame.Visible = false
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 14)
+local stroke = Instance.new("UIStroke", MainFrame)
+stroke.Color = Color3.fromRGB(110, 40, 180)
+stroke.Thickness = 1.5
+
+local Title = Instance.new("TextLabel", MainFrame)
+Title.Size = UDim2.new(1, 0, 0, 45)
+Title.BackgroundColor3 = Color3.fromRGB(24, 18, 36)
+Title.TextColor3 = Color3.fromRGB(220, 140, 255)
+Title.Text = "✨ PROHACK HUB - COMPLETE VERSION ✨"
+Title.TextSize = 15
+Title.Font = Enum.Font.GothamBold
+Instance.new("UICorner", Title).CornerRadius = UDim.new(0, 14)
+
+-- ปุ่มเปิด/ปิดเมนู
+local ToggleBtn = Instance.new("TextButton", ScreenGui)
+ToggleBtn.Size = UDim2.new(0, 45, 0, 45)
+ToggleBtn.Position = UDim2.new(0, 20, 0, 100)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(20, 70, 160)
+ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleBtn.Text = "PRO"
+ToggleBtn.TextSize = 11
+ToggleBtn.Font = Enum.Font.GothamBold
+ToggleBtn.ZIndex = 999
+ToggleBtn.Visible = false
+Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 12)
+local tStroke2 = Instance.new("UIStroke", ToggleBtn)
+tStroke2.Color = Color3.fromRGB(220, 240, 255)
+tStroke2.Thickness = 2.5
+
+task.spawn(function()
+    while task.wait(0.05) do
+        local alpha = math.abs(math.sin(os.clock() * 2))
+        ToggleBtn.BackgroundColor3 = Color3.fromRGB(20, 70, 160):Lerp(Color3.fromRGB(10, 35, 90), alpha)
+        tStroke2.Color = Color3.fromRGB(200, 230, 255):Lerp(Color3.fromRGB(100, 180, 255), alpha)
+    end
+end)
+
+local dragging, dragStart, startPos, totalMoved = false, nil, nil, 0
+ToggleBtn.InputBegan:Connect(function(i)
+    if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+        dragging, dragStart, startPos, totalMoved = true, i.Position, ToggleBtn.Position, 0
+    end
+end)
+UserInputService.InputChanged:Connect(function(i)
+    if dragging and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
+        local delta = i.Position - dragStart
+        totalMoved = delta.Magnitude
+        ToggleBtn.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+UserInputService.InputEnded:Connect(function(i)
+    if (i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch) and dragging then
+        dragging = false
+        if totalMoved < 6 then MainFrame.Visible = not MainFrame.Visible end
+    end
+end)
+
+local function isSameTeam(p)
+    if p == LocalPlayer then return true end
+    if LocalPlayer.Team and p.Team then
+        return LocalPlayer.Team == p.Team
+    elseif LocalPlayer.TeamColor and p.TeamColor then
+        return LocalPlayer.TeamColor == p.TeamColor
+    end
+    return false
+end
+
+local TabBar = Instance.new("Frame", MainFrame)
+TabBar.Size = UDim2.new(1, -20, 0, 38)
+TabBar.Position = UDim2.new(0, 10, 0, 55)
+TabBar.BackgroundTransparency = 1
+
+local function createContainer()
+    local scroll = Instance.new("ScrollingFrame", MainFrame)
+    scroll.Size = UDim2.new(1, -20, 1, -110)
+    scroll.Position = UDim2.new(0, 10, 0, 100)
+    scroll.BackgroundTransparency = 1
+    scroll.CanvasSize = UDim2.new(0, 0, 0, 1500)
+    scroll.ScrollBarThickness = 4
+    scroll.Visible = false
+    local uiList = Instance.new("UIListLayout", scroll)
+    uiList.Padding = UDim.new(0, 10)
+    return scroll
+end
+
+local C1, C2, C3 = createContainer(), createContainer(), createContainer()
+C1.Visible = true
+
+local function createTab(name, xPos, container)
+    local btn = Instance.new("TextButton", TabBar)
+    btn.Size = UDim2.new(0.32, 0, 1, 0)
+    btn.Position = UDim2.new(xPos, 0, 0, 0)
+    btn.BackgroundColor3 = Color3.fromRGB(28, 20, 42)
+    btn.TextColor3 = Color3.fromRGB(200, 200, 200)
+    btn.Text = name
+    btn.TextSize = 11
+    btn.Font = Enum.Font.GothamBold
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+    btn.MouseButton1Click:Connect(function()
+        C1.Visible, C2.Visible, C3.Visible = false, false, false
+        container.Visible = true
+    end)
+end
+createTab("1. ช่วยเล่น", 0, C1)
+createTab("2. ESP มองทะลุ", 0.34, C2)
+createTab("3. ล็อคเป้าหมาย", 0.68, C3)
+
+local function createButton(parent, name, cb)
+    local btn = Instance.new("TextButton", parent)
+    btn.Size = UDim2.new(1, -10, 0, 38)
+    btn.BackgroundColor3 = Color3.fromRGB(32, 24, 48)
+    btn.TextColor3 = Color3.fromRGB(235, 235, 235)
+    btn.Text = name
+    btn.TextSize = 12
+    btn.Font = Enum.Font.GothamMedium
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+    local stroke = Instance.new("UIStroke", btn)
+    stroke.Color = Color3.fromRGB(70, 45, 105)
+    stroke.Transparency = 0.5
+    local active = false
+    btn.MouseButton1Click:Connect(function()
+        active = not active
+        btn.BackgroundColor3 = active and Color3.fromRGB(120, 30, 180) or Color3.fromRGB(32, 24, 48)
+        stroke.Color = active and Color3.fromRGB(200, 100, 255) or Color3.fromRGB(70, 45, 105)
+        cb(active)
+    end)
+end
+
+local activeDraggingSlider = nil
+local function createSlider(parent, name, min, default, max, cb)
+    local realMin, realMax = min or 1, max or 1000
+    local currentValue = math.clamp(default, realMin, realMax)
+    local stepValue = 1
+
+    local frame = Instance.new("Frame", parent)
+    frame.Size = UDim2.new(1, -10, 0, 56)
+    frame.BackgroundColor3 = Color3.fromRGB(26, 19, 40)
+    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 8)
+    
+    local label = Instance.new("TextLabel", frame)
+    label.Size = UDim2.new(1, -110, 0, 22)
+    label.Position = UDim2.new(0, 8, 0, 4)
+    label.BackgroundTransparency = 1
+    label.TextColor3 = Color3.fromRGB(230, 230, 230)
+    label.Text = name .. " (ปัจจุบัน: " .. currentValue .. ")"
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.TextSize = 12
+    label.Font = Enum.Font.GothamMedium
+    
+    local sliderBg = Instance.new("TextButton", frame)
+    sliderBg.Size = UDim2.new(1, -16, 0, 8)
+    sliderBg.Position = UDim2.new(0, 8, 0, 34)
+    sliderBg.BackgroundColor3 = Color3.fromRGB(45, 32, 70)
+    sliderBg.Text = ""
+    Instance.new("UICorner", sliderBg).CornerRadius = UDim.new(0, 4)
+    
+    local fill = Instance.new("Frame", sliderBg)
+    fill.Size = UDim2.new((currentValue - realMin)/(realMax - realMin), 0, 1, 0)
+    fill.BackgroundColor3 = Color3.fromRGB(180, 80, 255)
+    Instance.new("UICorner", fill).CornerRadius = UDim.new(0, 4)
+    
+    local valBox = Instance.new("TextBox", frame)
+    valBox.Size = UDim2.new(0, 42, 0, 20)
+    valBox.Position = UDim2.new(1, -64, 0, 5)
+    valBox.BackgroundColor3 = Color3.fromRGB(35, 25, 55)
+    valBox.TextColor3 = Color3.fromRGB(230, 180, 255)
+    valBox.Text = tostring(stepValue)
+    valBox.TextSize = 11
+    valBox.Font = Enum.Font.GothamBold
+    valBox.ClearTextOnFocus = false
+    Instance.new("UICorner", valBox).CornerRadius = UDim.new(0, 4)
+
+    local function updateValue(newVal)
+        currentValue = math.clamp(newVal, realMin, realMax)
+        fill.Size = UDim2.new((currentValue - realMin)/(realMax - realMin), 0, 1, 0)
+        label.Text = name .. " (ปัจจุบัน: " .. currentValue .. ")"
+        cb(currentValue)
+    end
+
+    local function getStep()
+        local num = tonumber(valBox.Text)
+        if num and num > 0 then return math.floor(num + 0.5) end
+        return 1
+    end
+
+    valBox.FocusLost:Connect(function()
+        local step = tonumber(valBox.Text)
+        if not step or step <= 0 then valBox.Text = tostring(stepValue)
+        else stepValue = math.clamp(math.floor(step + 0.5), 1, realMax); valBox.Text = tostring(stepValue) end
+    end)
+
+    valBox:GetPropertyChangedSignal("Text"):Connect(function()
+        local text = valBox.Text:gsub("%D", "")
+        if #text > 4 then text = text:sub(1, 4) end
+        if valBox.Text ~= text then valBox.Text = text end
+    end)
+
+    local minusBtn = Instance.new("TextButton", frame)
+    minusBtn.Size = UDim2.new(0, 22, 0, 20)
+    minusBtn.Position = UDim2.new(1, -88, 0, 5)
+    minusBtn.BackgroundColor3 = Color3.fromRGB(45, 32, 70)
+    minusBtn.TextColor3 = Color3.fromRGB(230, 230, 230)
+    minusBtn.Text = "-"
+    minusBtn.TextSize = 12
+    minusBtn.Font = Enum.Font.GothamBold
+    Instance.new("UICorner", minusBtn).CornerRadius = UDim.new(0, 4)
+    minusBtn.MouseButton1Click:Connect(function() updateValue(currentValue - getStep()) end)
+
+    local plusBtn = Instance.new("TextButton", frame)
+    plusBtn.Size = UDim2.new(0, 22, 0, 20)
+    plusBtn.Position = UDim2.new(1, -20, 0, 5)
+    plusBtn.BackgroundColor3 = Color3.fromRGB(45, 32, 70)
+    plusBtn.TextColor3 = Color3.fromRGB(230, 230, 230)
+    plusBtn.Text = "+"
+    plusBtn.TextSize = 12
+    plusBtn.Font = Enum.Font.GothamBold
+    Instance.new("UICorner", plusBtn).CornerRadius = UDim.new(0, 4)
+    plusBtn.MouseButton1Click:Connect(function() updateValue(currentValue + getStep()) end)
+
+    local draggingSlider = false
+    sliderBg.InputBegan:Connect(function(i) 
+        if (i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch) and not activeDraggingSlider then
+            draggingSlider = true; activeDraggingSlider = sliderBg
+        end 
+    end)
+    UserInputService.InputEnded:Connect(function(i) 
+        if (i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch) and draggingSlider then
+            draggingSlider = false; if activeDraggingSlider == sliderBg then activeDraggingSlider = nil end
+        end 
+    end)
+    UserInputService.InputChanged:Connect(function(i)
+        if draggingSlider and activeDraggingSlider == sliderBg and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
+            local pos = math.clamp((i.Position.X - sliderBg.AbsolutePosition.X) / sliderBg.AbsoluteSize.X, 0, 1)
+            updateValue(math.floor(realMin + (realMax - realMin) * pos + 0.5))
+        end
+    end)
+    updateValue(currentValue)
+end-- ==========================================
+-- 2. ฟังก์ชันระบบช่วยเล่น (Tab 1)
+-- ==========================================
+local cSpeed, cJump, cHitbox = 16, 50, 5
+createButton(C1, "เปิด/ปิด วิ่งเร็ว (WalkSpeed)", function(st) 
+    _G.sEn = st 
+    if not st and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        LocalPlayer.Character.Humanoid.WalkSpeed = 16
+    end
+end)
+createSlider(C1, "ความเร็ววิ่ง", 16, 16, 1000, function(v) cSpeed = v end)
+RunService.Stepped:Connect(function()
+    if _G.sEn and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        LocalPlayer.Character.Humanoid.WalkSpeed = cSpeed
+    end
+end)
+
+createButton(C1, "เปิด/ปิด กระโดดสูง", function(st) 
+    _G.jEn = st 
+    if not st and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        LocalPlayer.Character.Humanoid.JumpPower = 50
+    end
+end)
+createSlider(C1, "กระโดดสูง", 50, 50, 1000, function(v) cJump = v end)
+RunService.Stepped:Connect(function()
+    if _G.jEn and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        LocalPlayer.Character.Humanoid.UseJumpPower = true
+        LocalPlayer.Character.Humanoid.JumpPower = cJump
+    end
+end)
+
+createButton(C1, "เปิด/ปิด ขยาย Hitbox", function(st) 
+    _G.hEn = st 
+    if not st then
+        for _, p in pairs(Players:GetPlayers()) do
+            if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                local hrp = p.Character.HumanoidRootPart
+                hrp.Size = Vector3.new(2, 2, 1)
+                hrp.Transparency, hrp.CanCollide = 1, true
+            end
+        end
+    end
+end)
+createSlider(C1, "ขนาด Hitbox", 1, 5, 1000, function(v) cHitbox = v end)
+RunService.Stepped:Connect(function()
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer and not isSameTeam(p) and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+            local hrp = p.Character.HumanoidRootPart
+            if _G.hEn then
+                hrp.Size = Vector3.new(cHitbox, cHitbox, cHitbox)
+                hrp.Transparency, hrp.CanCollide = 0.7, false
+            else
+                hrp.Size = Vector3.new(2, 2, 1)
+                hrp.Transparency, hrp.CanCollide = 1, true
+            end
+        end
+    end
+end)
+
+local noclipConn
+createButton(C1, "เดินทะลุ (Noclip)", function(st)
+    if st then
+        noclipConn = RunService.Stepped:Connect(function()
+            if LocalPlayer.Character then
+                for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+                    if part:IsA("BasePart") then part.CanCollide = false end
+                end
+            end
+        end)
+    else
+        if noclipConn then noclipConn:Disconnect() end
+    end
+end)
+
+-- ==========================================
+-- 3. ฟังก์ชันระบบ ESP มองทะลุ (Tab 2)
+-- ==========================================
+local espHigh, espTracer, espBox, fullbright = false, false, false, false
+createButton(C2, "1. เส้นชี้ (Tracer)", function(st) espTracer = st end)
+createButton(C2, "2. ออร่า (Highlight)", function(st) espHigh = st end)
+createButton(C2, "3. ESP Box (2D + หลอดเลือดซ้าย)", function(st) espBox = st end)
+createButton(C2, "เพิ่มแสงสว่าง (Fullbright)", function(st) fullbright = st end)
+
+local tracers, boxGUIs = {}, {}
+RunService.RenderStepped:Connect(function()
+    pcall(function()
+        local Lighting = game:GetService("Lighting")
+        Lighting.Ambient = fullbright and Color3.new(1,1,1) or Color3.new(0.5,0.5,0.5)
+        Lighting.OutdoorAmbient = fullbright and Color3.new(1,1,1) or Color3.new(0.5,0.5,0.5)
+    end)
+
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer then
+            local char = p.Character
+            local sameTeam = isSameTeam(p)
+            local teamCol = sameTeam and Color3.fromRGB(0,255,0) or Color3.fromRGB(255,0,0)
+
+            if espHigh and char and char:FindFirstChild("HumanoidRootPart") then
+                local hl = char:FindFirstChild("ProHighlight") or Instance.new("Highlight", char)
+                hl.Name, hl.Adornee, hl.FillTransparency = "ProHighlight", char, 0.5
+                hl.FillColor, hl.OutlineColor = teamCol, teamCol
+            elseif char and char:FindFirstChild("ProHighlight") then
+                char.ProHighlight:Destroy()
+            end
+
+            if espTracer and char and char:FindFirstChild("HumanoidRootPart") and Drawing then
+                local line = tracers[p] or Drawing.new("Line")
+                tracers[p] = line
+                local hrp = char.HumanoidRootPart
+                local vec, onScreen = Camera:WorldToViewportPoint(hrp.Position)
+                if onScreen then
+                    line.From = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y)
+                    line.To = Vector2.new(vec.X, vec.Y)
+                    line.Color, line.Visible = teamCol, true
+                else
+                    line.Visible = false
+                end
+            elseif tracers[p] then
+                pcall(function() tracers[p]:Remove() end)
+                tracers[p] = nil
+            end
+
+            if espBox and char and char:FindFirstChild("HumanoidRootPart") then
+                local hrp = char.HumanoidRootPart
+                local bg = boxGUIs[p]
+                if not bg then
+                    bg = Instance.new("BillboardGui", hrp)
+                    bg.Name, bg.AlwaysOnTop, bg.Size, bg.StudsOffset = "Box2DGUI", true, UDim2.new(3.5, 0, 5, 0), Vector3.new(0, 0, 0)
+                    
+                    local box = Instance.new("Frame", bg)
+                    box.Size, box.Position, box.BackgroundTransparency = UDim2.new(0.85, 0, 1, 0), UDim2.new(0.15, 0, 0, 0), 1
+                    local stroke = Instance.new("UIStroke", box)
+                    stroke.Name, stroke.Thickness = "BoxStroke", 1.5
+
+                    local hBg = Instance.new("Frame", bg)
+                    hBg.Size, hBg.Position, hBg.BackgroundColor3 = UDim2.new(0.1, 0, 1, 0), UDim2.new(0, 0, 0, 0), Color3.fromRGB(0, 0, 0)
+                    
+                    local hFill = Instance.new("Frame", hBg)
+                    hFill.Name, hFill.Size, hFill.BackgroundColor3 = "HealthFill", UDim2.new(1, 0, 1, 0), Color3.fromRGB(0, 255, 0)
+                    boxGUIs[p] = bg
+                else
+                    local stroke = bg:FindFirstChild("BoxStroke", true)
+                    local hFill = bg:FindFirstChild("HealthFill", true)
+                    local hum = char:FindFirstChild("Humanoid")
+                    if stroke then stroke.Color = teamCol end
+                    if hFill and hum then
+                        local maxH = hum.MaxHealth > 0 and hum.MaxHealth or 100
+                        local curH = math.clamp(hum.Health, 0, maxH)
+                        local hp = curH / maxH
+                        hFill.Size = UDim2.new(1, 0, hp, 0)
+                        hFill.Position = UDim2.new(0, 0, 1 - hp, 0)
+                        
+                        if curH <= 0 then 
+                            hFill.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+                        elseif hp > 0.75 then 
+                            hFill.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+                        elseif hp > 0.50 then 
+                            hFill.BackgroundColor3 = Color3.fromRGB(170, 255, 0)
+                        elseif hp > 0.25 then 
+                            hFill.BackgroundColor3 = Color3.fromRGB(255, 255, 0)
+                        elseif hp > 0.10 then 
+                            hFill.BackgroundColor3 = Color3.fromRGB(255, 140, 0)
+                        elseif hp > 0.01 then 
+                            hFill.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+                        else 
+                            hFill.BackgroundColor3 = Color3.fromRGB(0, 0, 0) 
+                        end
+                    end
+                end
+            elseif boxGUIs[p] then
+                pcall(function() boxGUIs[p]:Destroy() end)
+                boxGUIs[p] = nil
+            end
+        end
+    end
+end)
+  -- ==========================================
+-- 4. ฟังก์ชันระบบ Aimbot (Tab 3) + แก้ไขกึ่งกลางจอและไม่ล็อคตัวเอง
+-- ==========================================
+local aimEn, aimPart, currentFOV, wallCheckEn = false, "Head", 50, false
+createButton(C3, "เปิด/ปิด Aimbot", function(st) aimEn = st end)
+createButton(C3, "เปิด/ปิด เช็คสิ่งกีดขวาง (Wall Check)", function(st) wallCheckEn = st end)
+createButton(C3, "สลับเป้าหมาย (หัว / ตัว)", function(st) aimPart = st and "HumanoidRootPart" or "Head" end)
+createSlider(C3, "ขนาดวงกลม FOV", 1, 50, 1000, function(v) currentFOV = v end)
+
+local function isVisible(targetPart, targetChar)
+    if not wallCheckEn then return true end
+    if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("Head") then return false end
+    local origin = Camera.CFrame.Position
+    local direction = targetPart.Position - origin
+    
+    local raycastParams = RaycastParams.new()
+    raycastParams.FilterType = Enum.RaycastFilterType.Exclude
+    raycastParams.FilterDescendantsInstances = {LocalPlayer.Character, targetChar}
+    raycastParams.IgnoreWater = true
+    
+    local result = workspace:Raycast(origin, direction, raycastParams)
+    return result == nil
+end
+
+local fovC = Drawing and Drawing.new("Circle")
+if fovC then 
+    fovC.Visible = false 
+    fovC.Thickness = 1.5 
+    fovC.Color = Color3.fromRGB(200, 100, 255) 
+    fovC.Filled = false 
+end
+
+RunService.RenderStepped:Connect(function()
+    -- คำนวณกึ่งกลางหน้าจอเป๊ะๆ 100%
+    local center = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+    
+    -- วงกลม FOV จะแสดงขึ้นมาทันทีเมื่อเปิด Aimbot (ไม่สนว่าเมนูจะปิดหรือเปิดอยู่)
+    if fovC then 
+        fovC.Radius = currentFOV 
+        fovC.Position = center 
+        fovC.Visible = aimEn 
+    end
+    
+    if not aimEn then return end
+    
+    local target, minDist = nil, currentFOV
+    for _, p in pairs(Players:GetPlayers()) do
+        if not isSameTeam(p) and p.Character and p.Character:FindFirstChild(aimPart) then
+            local char = p.Character
+            local hum = char:FindFirstChild("Humanoid")
+            if hum and hum.Health > 0 then
+                local part = char[aimPart]
+                local pos, onScreen = Camera:WorldToViewportPoint(part.Position)
+                if onScreen and isVisible(part, char) then
+                    local dist = (Vector2.new(pos.X, pos.Y) - center).Magnitude
+                    if dist < minDist then
+                        minDist = dist
+                        target = part
+                    end
+                end
+            end
+        end
+    end
+
+    if target then
+        -- ล็อคเป้าแบบสมูทด้วย Lerp (ป้องกันการล็อคตัวเอง หรือหน้าจอหมุนเอียง)
+        local currentCFrame = Camera.CFrame
+        local targetCFrame = CFrame.new(currentCFrame.Position, target.Position)
+        Camera.CFrame = currentCFrame:Lerp(targetCFrame, 0.3)
+    end
+end)
+
+-- ควบคุมการโหลดเมื่อกดปุ่ม "ตกลง"
+AgreeBtn.MouseButton1Click:Connect(function()
+    TermsFrame:Destroy()
+    LoadFrame.Visible = true
+    
+    local percentages = {1, 7, 15, 28, 33, 47, 51, 69, 82, 98, 100}
+    
+    for _, pct in ipairs(percentages) do
+        LoadText.Text = "กำลังดาวน์โหลด... " .. pct .. "%"
+        BarFill.Size = UDim2.new(pct / 100, 0, 1, 0)
+        task.wait(1)
+    end
+    
+    LoadText.Text = "ดาวน์โหลดสำเร็จ!"
+    LoadText.TextColor3 = Color3.fromRGB(0, 255, 100)
+    BarFill.BackgroundColor3 = Color3.fromRGB(0, 255, 100)
+    
+    task.wait(1)
+    LoadFrame:Destroy()
+    ToggleBtn.Visible = true
+end)
+
+
